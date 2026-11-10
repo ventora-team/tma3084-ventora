@@ -3,24 +3,31 @@
 Use this template to record tests performed for Ventora.
 
 ## Test Information
-- **Test ID:** 
-- **Feature / Module:** 
-- **Tester:** 
-- **Date:** 
-- **Build / Version:** 
+- **Test ID:**
+- **Related FR-ID:**
+- **Feature / Module:**
+- **Test Type:** Unit / Widget / Integration / UAT
+- **Tester:**
+- **Date:**
+- **Build / Version:**
+- **Device / Android Version:**
+
+## Test Implementation
+- **Test File / Function:**
+- **LOGAI Entry No.:**
 
 ## Test Case
-- **Test objective:** 
-- **Preconditions:** 
-- **Test steps:**
-  1. 
-  2. 
-  3. 
-- **Expected result:** 
-- **Actual result:** 
+- **Test Objective:**
+- **Preconditions:**
+- **Test Steps:**
+  1.
+  2.
+  3.
+- **Expected Result:**
+- **Actual Result:**
 
 ## Test Result
 - **Status:** Pass / Fail / Blocked
-- **Evidence (screenshot or link):** 
-- **Defect / Issue reference:** 
-- **Remarks:** 
+- **Evidence (screenshot or link):**
+- **Defect / Issue Reference:**
+- **Remarks:**
