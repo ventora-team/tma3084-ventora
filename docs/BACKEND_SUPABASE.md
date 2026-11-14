@@ -2,7 +2,7 @@
 
 Owner: Nasriq (backend and AI). Covers the tasks from 14 Nov: tables, username login, public QR menu, Gemini test call.
 
-Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohoxnxzeg.supabase.co , in Nasriq's Supabase organization. All four migrations are applied. Ask Nasriq to invite you to the organization if you need the dashboard.
+Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohoxnxzeg.supabase.co , in Nasriq's Supabase organization. All migrations are applied. Ask Nasriq to invite you to the organization if you need the dashboard.
 
 ## Files
 
@@ -11,7 +11,7 @@ Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohox
 | `supabase/migrations/20261114000000_core_tables.sql` | Tables for users (`profiles`), menu (`products`, `product_sizes`), orders (`orders`, `order_items`) and points (`points_ledger`, `points_balance`), with access rules |
 | `supabase/migrations/20261114000100_public_menu.sql` | The read-only `public_menu` view for the QR page |
 | `supabase/migrations/20261114000200_security_fixes.sql` | Fixes from the Supabase security advisor |
-| `supabase/migrations/20261114000300_payment_methods.sql` | Payment options: `cash`, `online_banking` (FPX, DuitNow Transfer, bank transfer), `ewallet` (Touch 'n Go, GrabPay, Boost, DuitNow QR), `card`. Not confirmed with the client yet |
+| `supabase/migrations/20261114000300_payment_methods.sql`, `..._000400_payment_methods_wireframe.sql` | Payment options follow the wireframe: `cash`, `qr` (covers e-wallets), `card`. Not confirmed with the client yet |
 | `supabase/functions/gemini-test/` | One Gemini test call, key kept in Supabase secrets |
 
 Money is stored in sen (`6000` = RM 60.00) so totals never round wrong.
