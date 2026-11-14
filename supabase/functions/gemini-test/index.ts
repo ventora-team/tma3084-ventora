@@ -31,6 +31,7 @@ export async function isActiveStaff(req: Request): Promise<boolean> {
 }
 
 export async function handler(req: Request): Promise<Response> {
+  if (req.method !== "POST") return json({ error: "Use POST" }, 405);
   try {
     if (!(await isActiveStaff(req))) return json({ error: "Staff login required" }, 401);
   } catch (e) {
@@ -41,10 +42,8 @@ export async function handler(req: Request): Promise<Response> {
   if (!key) return json({ error: "GEMINI_API_KEY is not set" }, 500);
 
   let question = "Hi, do you have chocolate cake today?";
-  if (req.method === "POST") {
-    const body = await req.json().catch(() => ({}));
-    if (typeof body.question === "string" && body.question.trim()) question = body.question.slice(0, 1000);
-  }
+  const body = await req.json().catch(() => ({}));
+  if (typeof body.question === "string" && body.question.trim()) question = body.question.slice(0, 1000);
 
   // A slow AI must not block staff: after 20 s the app shows the template replies instead.
   let res: Response;
@@ -73,7 +72,10 @@ export async function handler(req: Request): Promise<Response> {
     console.error("Gemini error", res.status, await res.text());
     return json({ error: "AI is unavailable, use a template reply", status: res.status }, 502);
   }
-  return json({ question, draft: extractText(await res.json()) });
+  const draft = extractText(await res.json());
+  // Gemini can answer 200 with no text (for example a safety block): treat it like an outage.
+  if (!draft) return json({ error: "AI is unavailable, use a template reply", status: 200 }, 502);
+  return json({ question, draft });
 }
 
 function json(data: unknown, status = 200): Response {

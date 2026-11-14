@@ -96,8 +96,8 @@ It uses the model name `gemini-flash-latest` so it keeps working when Google ren
 
 ## How this was tested
 
-- `deno test --allow-env` in `supabase/functions/gemini-test` (7 tests, Gemini and the staff check are faked).
-- The two migrations were run in an in-memory Postgres (PGlite) with a stand-in for Supabase's `auth` schema, checking: the trigger makes profiles, duplicate usernames fail, not-logged-in users see only `public_menu`, staff add orders but cannot delete them or change points, expired points do not count, staff cannot make themselves owner.
+- `deno test --allow-env` in `supabase/functions/gemini-test` (9 tests, Gemini and the staff check are faked).
+- The five migrations were run in an in-memory Postgres (PGlite) with a stand-in for Supabase's `auth` schema, checking: the trigger makes profiles, duplicate usernames fail, not-logged-in users see only `public_menu`, staff add orders but cannot delete them or change points, expired points do not count, staff cannot make themselves owner.
 - On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Tested live on 14 Nov: username login (`nasriq`) and a real Gemini draft through `gemini-test`.
 
 ## Left for later
