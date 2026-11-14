@@ -63,3 +63,14 @@ Deno.test("staff gets a draft", async () => {
     assertEquals((await (await handler(staffReq('{"question":"Chocolate?"}'))).json()).draft, "Yes, we do!");
   } finally { restore(); }
 });
+
+Deno.test("Gemini hang or network error becomes the template fallback", async () => {
+  Deno.env.set("GEMINI_API_KEY", "test");
+  const real = globalThis.fetch;
+  globalThis.fetch = ((url: string) =>
+    String(url).includes("is_staff") ? Promise.resolve(new Response("true")) : Promise.reject(new DOMException("timed out", "TimeoutError"))) as typeof fetch;
+  try {
+    const res = await handler(staffReq());
+    assertEquals(res.status, 502);
+  } finally { globalThis.fetch = real; }
+});

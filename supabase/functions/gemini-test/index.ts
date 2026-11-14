@@ -23,12 +23,20 @@ export async function isActiveStaff(req: Request): Promise<boolean> {
     method: "POST",
     headers: { Authorization: auth, apikey: anon, "Content-Type": "application/json" },
     body: "{}",
+    signal: AbortSignal.timeout(5_000),
   });
-  return res.ok && (await res.json()) === true;
+  const ok = res.ok && (await res.json()) === true;
+  console.log("staff check", res.status, ok);
+  return ok;
 }
 
 export async function handler(req: Request): Promise<Response> {
-  if (!(await isActiveStaff(req))) return json({ error: "Staff login required" }, 401);
+  try {
+    if (!(await isActiveStaff(req))) return json({ error: "Staff login required" }, 401);
+  } catch (e) {
+    console.error("staff check failed", e);
+    return json({ error: "Could not check login, try again" }, 503);
+  }
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) return json({ error: "GEMINI_API_KEY is not set" }, 500);
 
@@ -38,16 +46,27 @@ export async function handler(req: Request): Promise<Response> {
     if (typeof body.question === "string" && body.question.trim()) question = body.question.slice(0, 1000);
   }
 
-  const res = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: "You draft short, polite replies for staff at Mawar Cake House, a halal cake shop. Staff check every reply before sending. Never invent prices or stock." }],
-      },
-      contents: [{ role: "user", parts: [{ text: question }] }],
-    }),
-  });
+  // A slow AI must not block staff: after 20 s the app shows the template replies instead.
+  let res: Response;
+  try {
+    res = await fetch(GEMINI_URL, {
+      signal: AbortSignal.timeout(20_000),
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: "You draft short, polite replies for staff at Mawar Cake House, a halal cake shop. Staff check every reply before sending. Never invent prices or stock." }],
+        },
+        contents: [{ role: "user", parts: [{ text: question }] }],
+        // Short replies need no "thinking" step; with it the model took over 20 s (14 Nov).
+        generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
+      }),
+    });
+  } catch (e) {
+    console.error("Gemini timeout or network error", e);
+    return json({ error: "AI is unavailable, use a template reply", status: 0 }, 502);
+  }
+  console.log("Gemini answered", res.status);
 
   if (!res.ok) {
     // Never pass Google's raw error back: it can echo request details.
