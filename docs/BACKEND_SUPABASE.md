@@ -81,7 +81,9 @@ supabase secrets set GEMINI_API_KEY=<your key>
 supabase functions deploy gemini-test
 ```
 
-Call it as a signed-in user:
+Deployed on 14 Nov (works without the key, it just answers "GEMINI_API_KEY is not set"). Supabase's own login check also lets the public key through, so the function checks that the caller is an **active staff** account first and answers 401 "Staff login required" otherwise. Checked live: no token and the public key both get 401.
+
+Call it as a signed-in staff member:
 ```
 POST https://<project-ref>.supabase.co/functions/v1/gemini-test
 Authorization: Bearer <user's access token>
@@ -93,9 +95,9 @@ It uses the model name `gemini-flash-latest` so it keeps working when Google ren
 
 ## How this was tested
 
-- `deno test --allow-env` in `supabase/functions/gemini-test` (3 tests, Gemini is faked).
+- `deno test --allow-env` in `supabase/functions/gemini-test` (6 tests, Gemini and the staff check are faked).
 - The two migrations were run in an in-memory Postgres (PGlite) with a stand-in for Supabase's `auth` schema, checking: the trigger makes profiles, duplicate usernames fail, not-logged-in users see only `public_menu`, staff add orders but cannot delete them or change points, expired points do not count, staff cannot make themselves owner.
-- On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Username login and the Gemini function are not tested live yet.
+- On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Username login and a real Gemini answer are not tested live yet.
 
 ## Left for later
 

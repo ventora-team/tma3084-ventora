@@ -1,7 +1,7 @@
 // One test call to Google Gemini. The key lives only in Supabase secrets:
 //   supabase secrets set GEMINI_API_KEY=...
-// Supabase checks the caller's login token before this runs (verify_jwt is on by default),
-// so only signed-in staff can use up the AI quota.
+// Supabase's verify_jwt also lets the public anon key through, so the function itself
+// checks that the caller is an active staff member before using the AI quota.
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
@@ -12,7 +12,23 @@ export function extractText(body: unknown): string {
   return parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
 }
 
+// Asks the database's is_staff() with the caller's own token: true only for active staff.
+// The anon key gets "permission denied", so it fails here too.
+export async function isActiveStaff(req: Request): Promise<boolean> {
+  const auth = req.headers.get("Authorization");
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!auth || !url || !anon) return false;
+  const res = await fetch(`${url}/rest/v1/rpc/is_staff`, {
+    method: "POST",
+    headers: { Authorization: auth, apikey: anon, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  return res.ok && (await res.json()) === true;
+}
+
 export async function handler(req: Request): Promise<Response> {
+  if (!(await isActiveStaff(req))) return json({ error: "Staff login required" }, 401);
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) return json({ error: "GEMINI_API_KEY is not set" }, 500);
 
