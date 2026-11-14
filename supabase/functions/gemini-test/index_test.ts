@@ -74,3 +74,15 @@ Deno.test("Gemini hang or network error becomes the template fallback", async ()
     assertEquals(res.status, 502);
   } finally { globalThis.fetch = real; }
 });
+
+Deno.test("only POST is allowed", async () => {
+  assertEquals((await handler(new Request("http://x"))).status, 405);
+});
+
+Deno.test("empty Gemini answer becomes the template fallback", async () => {
+  Deno.env.set("GEMINI_API_KEY", "test");
+  const restore = fakeFetch(new Response("true"), new Response(JSON.stringify({ candidates: [] })));
+  try {
+    assertEquals((await handler(staffReq())).status, 502);
+  } finally { restore(); }
+});
