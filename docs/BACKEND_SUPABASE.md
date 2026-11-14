@@ -91,13 +91,13 @@ Authorization: Bearer <user's access token>
 ```
 Answer: `{"question": "...", "draft": "..."}`. If Gemini fails or the daily limit is hit it answers 502 with "AI is unavailable, use a template reply", which is when the app shows the canned templates (FR-AI-01).
 
-It uses the model name `gemini-flash-latest` so it keeps working when Google renames models.
+It uses the model name `gemini-flash-latest` so it keeps working when Google renames models, with its "thinking" step turned off: with thinking on, a short reply took over 20 seconds. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
 
 ## How this was tested
 
-- `deno test --allow-env` in `supabase/functions/gemini-test` (6 tests, Gemini and the staff check are faked).
+- `deno test --allow-env` in `supabase/functions/gemini-test` (7 tests, Gemini and the staff check are faked).
 - The two migrations were run in an in-memory Postgres (PGlite) with a stand-in for Supabase's `auth` schema, checking: the trigger makes profiles, duplicate usernames fail, not-logged-in users see only `public_menu`, staff add orders but cannot delete them or change points, expired points do not count, staff cannot make themselves owner.
-- On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Username login and a real Gemini answer are not tested live yet.
+- On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Tested live on 14 Nov: username login (`nasriq`) and a real Gemini draft through `gemini-test`.
 
 ## Left for later
 
