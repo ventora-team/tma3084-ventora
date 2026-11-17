@@ -92,7 +92,7 @@ Authorization: Bearer <user's access token>
 ```
 Answer: `{"question": "...", "draft": "..."}`. If Gemini fails or the daily limit is hit it answers 502 with "AI is unavailable, use a template reply", which is when the app shows the canned templates (FR-AI-01).
 
-It uses the model name `gemini-flash-latest` so it keeps working when Google renames models, with its "thinking" step turned off: with thinking on, a short reply took over 20 seconds. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
+It uses the fixed model `gemini-3.5-flash-lite` (about 1.5 s per reply). Do not use `gemini-flash-latest`: on 17 Nov it moved to a newer, slower model that hung for free-tier keys. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
 
 ## How this was tested
 
