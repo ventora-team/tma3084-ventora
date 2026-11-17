@@ -3,8 +3,10 @@
 // Supabase's verify_jwt also lets the public anon key through, so the function itself
 // checks that the caller is an active staff member before using the AI quota.
 
+// Pinned, not "-latest": on 17 Nov "gemini-flash-latest" moved to a slower model that hung for
+// free-tier keys (503 after 20+ s), while the lite models answered in about 1.5 s.
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
 
 export function extractText(body: unknown): string {
   // deno-lint-ignore no-explicit-any
@@ -57,8 +59,6 @@ export async function handler(req: Request): Promise<Response> {
           parts: [{ text: "You draft short, polite replies for staff at Mawar Cake House, a halal cake shop. Staff check every reply before sending. Never invent prices or stock." }],
         },
         contents: [{ role: "user", parts: [{ text: question }] }],
-        // Short replies need no "thinking" step; with it the model took over 20 s (14 Nov).
-        generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
       }),
     });
   } catch (e) {
