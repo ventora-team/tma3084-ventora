@@ -14,23 +14,29 @@ export function extractText(body: unknown): string {
   return parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
 }
 
-// Asks the database's is_staff() with the caller's own token: true only for active staff.
+// Calls a database function with the caller's own token and answers true only if it returns true.
 // The anon key gets "permission denied", so it fails here too.
-export async function isActiveStaff(req: Request): Promise<boolean> {
+async function dbSaysTrue(req: Request, fn: string): Promise<boolean> {
   const auth = req.headers.get("Authorization");
   const url = Deno.env.get("SUPABASE_URL");
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
   if (!auth || !url || !anon) return false;
-  const res = await fetch(`${url}/rest/v1/rpc/is_staff`, {
+  const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
     method: "POST",
     headers: { Authorization: auth, apikey: anon, "Content-Type": "application/json" },
     body: "{}",
     signal: AbortSignal.timeout(5_000),
   });
   const ok = res.ok && (await res.json()) === true;
-  console.log("staff check", res.status, ok);
+  console.log(fn, res.status, ok);
   return ok;
 }
+
+// True only for active staff.
+export const isActiveStaff = (req: Request) => dbSaysTrue(req, "is_staff");
+
+// Counts this request against the shop's daily cap (100, set in the database); false once it is used up.
+export const useAiQuota = (req: Request) => dbSaysTrue(req, "use_ai_quota");
 
 export async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") return json({ error: "Use POST" }, 405);
@@ -42,6 +48,13 @@ export async function handler(req: Request): Promise<Response> {
   }
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) return json({ error: "GEMINI_API_KEY is not set" }, 500);
+
+  // If the count cannot be checked, play safe and send staff to the templates.
+  const underCap = await useAiQuota(req).catch((e) => {
+    console.error("quota check failed", e);
+    return false;
+  });
+  if (!underCap) return json({ error: "AI is unavailable, use a template reply", reason: "daily_limit" }, 502);
 
   let question = "Hi, do you have chocolate cake today?";
   const body = await req.json().catch(() => ({}));
