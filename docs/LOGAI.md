@@ -41,4 +41,4 @@ One entry per significant AI-assisted piece of work, using the fields from secti
   - `deno test --allow-env` in `supabase/functions/gemini-test`: 11 passed.
   - All migrations run in PGlite: requests 1 to 100 pass, 101 refused, count stays 100, new day starts again, inactive account refused without using the count, public key refused, users cannot read or reset the counter.
   - Live project: not applied or deployed yet.
-  - PR: to be added.
+  - PR: https://github.com/ventora-team/tma3084-ventora/pull/20 (reviewer: Zulirfan)
