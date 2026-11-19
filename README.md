@@ -24,12 +24,13 @@ An Android app for the shop tablet and the staff and owner phones. It records ca
 
 ## Run it
 
-The Flutter project is not created yet. Once it is:
-
 ```bash
 flutter pub get
-flutter run
+flutter run            # Android phone or emulator
+flutter run -d chrome  # quick check in Chrome on a laptop
 ```
+
+Sign in with a staff username from Supabase (see [Backend: Supabase](docs/BACKEND_SUPABASE.md)). Demo 1 has the Reply and Complaints screens (FR-AI-01, FR-AI-02).
 
 ## Test it
 
