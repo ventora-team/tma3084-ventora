@@ -32,7 +32,15 @@ export async function isActiveStaff(req: Request): Promise<boolean> {
   return ok;
 }
 
+// The Flutter web build runs in a browser, which asks first with OPTIONS and needs these headers.
+// Safe to allow any site: every POST still needs an active staff member's own login token.
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 export async function handler(req: Request): Promise<Response> {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Use POST" }, 405);
   try {
     if (!(await isActiveStaff(req))) return json({ error: "Staff login required" }, 401);
@@ -79,7 +87,7 @@ export async function handler(req: Request): Promise<Response> {
 }
 
 function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(data), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 }
 
 if (import.meta.main) Deno.serve(handler);

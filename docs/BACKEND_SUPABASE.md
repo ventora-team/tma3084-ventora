@@ -92,6 +92,8 @@ Authorization: Bearer <user's access token>
 ```
 Answer: `{"question": "...", "draft": "..."}`. If Gemini fails or the daily limit is hit it answers 502 with "AI is unavailable, use a template reply", which is when the app shows the canned templates (FR-AI-01).
 
+Browser calls (the Flutter web build) work too: the function answers the browser's OPTIONS pre-check and sends CORS headers. Any site may call it, which is safe because every POST still needs an active staff member's own login token. Deployed 19 Nov (version 8, without the daily cap): checked live that the pre-check answers 200 with the CORS headers, and the public key or no login still get 401.
+
 It uses the fixed model `gemini-3.5-flash-lite` (about 1.5 s per reply). Do not use `gemini-flash-latest`: on 17 Nov it moved to a newer, slower model that hung for free-tier keys. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
 
 ## How this was tested
