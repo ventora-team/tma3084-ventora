@@ -41,4 +41,4 @@ One entry per significant AI-assisted piece of work, using the fields from secti
   - `dart format`, `flutter analyze` (no issues), `flutter test --coverage`: 7 passed, 91% line coverage on the tested files.
   - `deno test --allow-env` in `supabase/functions/gemini-test`: 10 passed; the live function answered the browser pre-check with 405 before the change. Deployed 19 Nov (version 8): pre-check 200 with CORS headers, public key and no login still 401.
   - Web build served locally: login screen and its empty-field check work in the browser. Signed-in run with the live AI: pending.
-  - PR: not opened yet.
+  - PR: https://github.com/ventora-team/tma3084-ventora/pull/21
