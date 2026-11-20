@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'ai.dart';
 import 'complaints.dart';
 import 'pages.dart';
+import 'theme.dart';
 
 const supabaseUrl = 'https://pdnhqcjlyszohoxnxzeg.supabase.co';
 
@@ -33,7 +34,7 @@ class MawarApp extends StatelessWidget {
     final auth = Supabase.instance.client.auth;
     return MaterialApp(
       title: 'Mawar Cake House',
-      theme: ThemeData(colorSchemeSeed: Colors.pink),
+      theme: mawarTheme(),
       home: StreamBuilder<AuthState>(
         stream: auth.onAuthStateChange,
         builder: (context, _) => auth.currentSession == null

@@ -78,7 +78,6 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final p = order.pickupDate;
     final allergy = !order.allergyAnswered
         ? 'Allergy not answered'
@@ -100,10 +99,38 @@ class _OrderCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(order.status.label, style: theme.textTheme.labelLarge),
+            _StatusPill(status: order.status),
             Text(order.total.toStringAsFixed(2)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status});
+  final OrderStatus status;
+
+  Color get _color => switch (status) {
+    OrderStatus.received => const Color(0xFFE8C872),
+    OrderStatus.depositPaid => const Color(0xFFA8D4F0),
+    OrderStatus.preparing => const Color(0xFF8EC5FF),
+    OrderStatus.ready => const Color(0xFF9BDB9B),
+    OrderStatus.collected => const Color(0xFFBDBDBD),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: _color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status.label,
+        style: const TextStyle(color: Color(0xFF1C1412), fontSize: 12),
       ),
     );
   }
