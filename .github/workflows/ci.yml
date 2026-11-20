@@ -51,8 +51,9 @@ jobs:
         run: |
           sudo apt-get install -y lcov > /dev/null
           # Leave out generated code so it does not skew the number.
+          # "unused": newer lcov fails when a pattern matches nothing, e.g. before any generated code exists.
           lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' 'lib/generated/*' \
-            -o coverage/lcov.clean.info --quiet
+            -o coverage/lcov.clean.info --quiet --ignore-errors unused
           PCT=$(lcov --summary coverage/lcov.clean.info 2>&1 | grep -o 'lines.*: [0-9.]*' | grep -o '[0-9.]*$')
           echo "Line coverage: ${PCT}%"
           awk "BEGIN { exit !(${PCT} >= ${MIN_COVERAGE}) }" || { echo "Coverage is below ${MIN_COVERAGE}%"; exit 1; }

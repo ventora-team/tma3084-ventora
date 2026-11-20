@@ -32,3 +32,9 @@ ios/.symlinks/
 *.iml
 .DS_Store
 Thumbs.db
+
+# Private notes (agent and personal docs)
+CLAUDE.md
+AGENTS.md
+CONTEXT.md
+.claude/
