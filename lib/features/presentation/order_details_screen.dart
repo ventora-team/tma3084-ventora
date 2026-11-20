@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../data/order.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
@@ -31,8 +32,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     final allergy = !o.allergyAnswered
         ? 'Not answered'
         : o.allergyNote.isEmpty
-            ? 'No allergy'
-            : o.allergyNote;
+        ? 'No allergy'
+        : o.allergyNote;
     final next = _next;
 
     return Scaffold(
@@ -69,13 +70,17 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           for (final s in OrderStatus.values)
             ListTile(
               dense: true,
-              leading: Icon(s == o.status
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked),
+              leading: Icon(
+                s == o.status
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(
                 s.label,
                 style: TextStyle(
-                  fontWeight: s == o.status ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: s == o.status
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                 ),
               ),
             ),
@@ -90,10 +95,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Widget _row(String label, double value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(label), Text(value.toStringAsFixed(2))],
-        ),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [Text(label), Text(value.toStringAsFixed(2))],
+    ),
+  );
 }

@@ -2,12 +2,12 @@ enum OrderStatus { received, depositPaid, preparing, ready, collected }
 
 extension OrderStatusLabel on OrderStatus {
   String get label => switch (this) {
-        OrderStatus.received => 'Received',
-        OrderStatus.depositPaid => 'Deposit paid',
-        OrderStatus.preparing => 'Preparing',
-        OrderStatus.ready => 'Ready',
-        OrderStatus.collected => 'Collected',
-      };
+    OrderStatus.received => 'Received',
+    OrderStatus.depositPaid => 'Deposit paid',
+    OrderStatus.preparing => 'Preparing',
+    OrderStatus.ready => 'Ready',
+    OrderStatus.collected => 'Collected',
+  };
 }
 
 class Order {
