@@ -22,3 +22,24 @@ One entry per significant AI-assisted piece of work, using the fields from secti
   - Live project checks: public menu readable without login; orders, profiles and points column denied; advisor shows only 2 intended warnings.
   - LOGTEST entries: to be added when the LOGTEST file is merged.
   - PR: https://github.com/ventora-team/tma3084-ventora/pull/18 (reviewer: Zulirfan)
+
+---
+
+## AI-003
+
+- **Date:** 19 Nov 2026
+- **Owner:** Nasriq (Backend and AI)
+- **Target Feature / Module:** First Flutter project and the Demo 1 screens for FR-AI-01 (reply drafts) and FR-AI-02 (complaint hand-over): `lib/`, `test/`
+- **AI Tool & Model Used:** Claude Code, model Claude Opus 5.5
+- **Specification / Prompt Provided:** Adam's Demo 1 split (Nasriq: "Reply draft and complaint hand-over", FR-AI-01 and FR-AI-02), the lecturer's rule that the Flutter app must partly run, and the agreed SRS wording: staff edit and approve every draft, complaints get no AI reply and go to the owner's Complaints page (New or Handled), staff can flag by hand or release a wrongly flagged message back to the reply flow, templates when the AI is down or the 100-a-day cap is used up.
+- **AI Output Summary:** `flutter create` at the repo root (Android, Windows and web); CORS headers in the `gemini-test` Edge Function so the web build can call it, with one more Deno test; staff login by username (hidden email, as in `docs/BACKEND_SUPABASE.md`); Reply screen that calls the `gemini-test` Edge Function, shows an editable draft and copies it on approval, or shows template replies when the AI is unavailable; complaint check (English and Malay keywords) that skips the AI; Complaints screen with New and Handled, "Mark handled" and "Release to reply flow"; 7 tests.
+- **Human Refinement & Debugging:**
+  - Complaints are kept in memory for Demo 1 (marked as a shortcut in the code); the complaints table comes with the full FR-AI-02.
+  - A released message is not flagged again, so staff are not stuck in a loop.
+  - Two tests first failed: the buttons sat below the small test screen, and the clipboard call never finished without a fake clipboard. Fixed in the tests, not the app.
+  - CI on Flutter 3.50 failed twice: `flutter analyze` flagged the deprecated `package:flutter/material.dart` (switched to `material_ui`), then the coverage step stopped because lcov now treats a filter that matches no files (`*.g.dart`) as an error (added `--ignore-errors unused` in `ci.yml`).
+- **Verification & GitHub PR Link:**
+  - `dart format`, `flutter analyze` (no issues), `flutter test --coverage`: 7 passed, 91% line coverage on the tested files.
+  - `deno test --allow-env` in `supabase/functions/gemini-test`: 10 passed; the live function answered the browser pre-check with 405 before the change. Deployed 19 Nov (version 8): pre-check 200 with CORS headers, public key and no login still 401.
+  - Web build served locally: login screen and its empty-field check work in the browser. Signed-in run with the live AI: pending.
+  - PR: https://github.com/ventora-team/tma3084-ventora/pull/21

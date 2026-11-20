@@ -86,3 +86,12 @@ Deno.test("empty Gemini answer becomes the template fallback", async () => {
     assertEquals((await handler(staffReq())).status, 502);
   } finally { restore(); }
 });
+
+Deno.test("browser pre-check is allowed and answers carry the CORS header", async () => {
+  const pre = await handler(new Request("http://x", { method: "OPTIONS" }));
+  assertEquals(pre.status, 200);
+  assertEquals(pre.headers.get("Access-Control-Allow-Origin"), "*");
+  const res = await handler(new Request("http://x", { method: "POST", body: "{}" }));
+  assertEquals(res.status, 401);
+  assertEquals(res.headers.get("Access-Control-Allow-Origin"), "*");
+});
