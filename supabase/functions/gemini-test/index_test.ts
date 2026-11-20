@@ -4,11 +4,18 @@ import { extractText, handler } from "./index.ts";
 Deno.env.set("SUPABASE_URL", "http://db");
 Deno.env.set("SUPABASE_ANON_KEY", "anon");
 
-// Fake network: is_staff answers `staff`, Gemini answers `gemini`.
-function fakeFetch(staff: Response, gemini?: Response) {
+// Fake network: is_staff answers `staff`, use_ai_quota answers `quota` (under the cap by default),
+// Gemini answers `gemini`. `calls` records every URL so tests can check Gemini was not asked.
+const calls: string[] = [];
+function fakeFetch(staff: Response, gemini?: Response, quota: Response | Error = new Response("true")) {
   const real = globalThis.fetch;
-  globalThis.fetch = ((url: string) =>
-    Promise.resolve(String(url).includes("is_staff") ? staff : gemini!)) as typeof fetch;
+  calls.length = 0;
+  globalThis.fetch = ((url: string) => {
+    calls.push(String(url));
+    if (String(url).includes("is_staff")) return Promise.resolve(staff);
+    if (String(url).includes("use_ai_quota")) return quota instanceof Error ? Promise.reject(quota) : Promise.resolve(quota);
+    return Promise.resolve(gemini!);
+  }) as typeof fetch;
   return () => (globalThis.fetch = real);
 }
 const staffReq = (body = "{}") =>
@@ -68,7 +75,7 @@ Deno.test("Gemini hang or network error becomes the template fallback", async ()
   Deno.env.set("GEMINI_API_KEY", "test");
   const real = globalThis.fetch;
   globalThis.fetch = ((url: string) =>
-    String(url).includes("is_staff") ? Promise.resolve(new Response("true")) : Promise.reject(new DOMException("timed out", "TimeoutError"))) as typeof fetch;
+    String(url).includes("/rpc/") ? Promise.resolve(new Response("true")) : Promise.reject(new DOMException("timed out", "TimeoutError"))) as typeof fetch;
   try {
     const res = await handler(staffReq());
     assertEquals(res.status, 502);
@@ -84,6 +91,26 @@ Deno.test("empty Gemini answer becomes the template fallback", async () => {
   const restore = fakeFetch(new Response("true"), new Response(JSON.stringify({ candidates: [] })));
   try {
     assertEquals((await handler(staffReq())).status, 502);
+  } finally { restore(); }
+});
+
+Deno.test("daily cap used up: template fallback and Gemini is not called", async () => {
+  Deno.env.set("GEMINI_API_KEY", "test");
+  const restore = fakeFetch(new Response("true"), new Response("must not be used"), new Response("false"));
+  try {
+    const res = await handler(staffReq());
+    assertEquals(res.status, 502);
+    assertEquals((await res.json()).reason, "daily_limit");
+    assertEquals(calls.some((u) => u.includes("generativelanguage")), false);
+  } finally { restore(); }
+});
+
+Deno.test("cap check failing also falls back to templates", async () => {
+  Deno.env.set("GEMINI_API_KEY", "test");
+  const restore = fakeFetch(new Response("true"), new Response("must not be used"), new Error("network"));
+  try {
+    assertEquals((await handler(staffReq())).status, 502);
+    assertEquals(calls.some((u) => u.includes("generativelanguage")), false);
   } finally { restore(); }
 });
 

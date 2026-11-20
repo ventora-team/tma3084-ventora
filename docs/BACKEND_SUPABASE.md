@@ -2,7 +2,7 @@
 
 Owner: Nasriq (backend and AI). Covers the tasks from 14 Nov: tables, username login, public QR menu, Gemini test call.
 
-Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohoxnxzeg.supabase.co , in Nasriq's Supabase organization. All migrations are applied. Ask Nasriq to invite you to the organization if you need the dashboard.
+Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohoxnxzeg.supabase.co , in Nasriq's Supabase organization. All migrations up to 14 Nov are applied; the 18 Nov daily cap (`20261118000000_ai_daily_cap.sql`) is not applied yet. Ask Nasriq to invite you to the organization if you need the dashboard.
 
 ## Files
 
@@ -12,6 +12,7 @@ Live project: `mawar-cake-house` (free plan, Singapore), https://pdnhqcjlyszohox
 | `supabase/migrations/20261114000100_public_menu.sql` | The read-only `public_menu` view for the QR page |
 | `supabase/migrations/20261114000200_security_fixes.sql` | Fixes from the Supabase security advisor |
 | `supabase/migrations/20261114000300_payment_methods.sql`, `..._000400_payment_methods_wireframe.sql` | Payment options follow the wireframe: `cash`, `qr` (covers e-wallets), `card`. Not confirmed with the client yet |
+| `supabase/migrations/20261118000000_ai_daily_cap.sql` | Shared daily AI cap: `ai_usage` counter table and `use_ai_quota()` (100 requests a day for the whole shop, SRS AI-10) |
 | `supabase/functions/gemini-test/` | One Gemini test call, key kept in Supabase secrets |
 
 Money is stored in sen (`6000` = RM 60.00) so totals never round wrong.
@@ -72,7 +73,7 @@ Filter by category: `...public_menu?category=eq.Cakes`. The publishable key is s
 
 Logged-out visitors can read only available products and only the columns in the example (no points), and sizes of those products. Checked on the live project 14 Nov: `public_menu` works, while `products?select=points`, `orders` and `profiles` give "permission denied" or an empty list.
 
-The Supabase security advisor still shows two warnings: signed-in users can call `is_owner` and `is_staff`. That is on purpose: the access rules need them, and they only answer yes or no about the caller.
+The Supabase security advisor still shows two warnings: signed-in users can call `is_owner` and `is_staff`. That is on purpose: the access rules need them, and they only answer yes or no about the caller. Expect the same warning for `use_ai_quota`: the Edge Function calls it with the user's token. Calling it directly only uses up one of the day's requests, and only for active staff.
 
 ## Gemini test call
 
@@ -92,13 +93,16 @@ Authorization: Bearer <user's access token>
 ```
 Answer: `{"question": "...", "draft": "..."}`. If Gemini fails or the daily limit is hit it answers 502 with "AI is unavailable, use a template reply", which is when the app shows the canned templates (FR-AI-01).
 
+**Daily cap:** the whole shop shares 100 AI requests a day (SRS Table 11, AI-10), well under Gemini's free tier. Before calling Gemini the function asks the database `use_ai_quota()`, which adds one to today's count and says no once 100 are used. Then the answer is 502 with `"reason": "daily_limit"`, so the app can show the templates. "Today" is shop time (Kuching, UTC+8): the count starts again at midnight. If the count cannot be checked, the function also sends staff to the templates instead of calling Gemini. To change the number, edit `100` in a new migration that replaces `use_ai_quota()`. Today's count: `select * from ai_usage order by day desc;` in the SQL editor.
+
 Browser calls (the Flutter web build) work too: the function answers the browser's OPTIONS pre-check and sends CORS headers. Any site may call it, which is safe because every POST still needs an active staff member's own login token. Deployed 19 Nov (version 8, without the daily cap): checked live that the pre-check answers 200 with the CORS headers, and the public key or no login still get 401.
 
 It uses the fixed model `gemini-3.5-flash-lite` (about 1.5 s per reply). Do not use `gemini-flash-latest`: on 17 Nov it moved to a newer, slower model that hung for free-tier keys. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
 
 ## How this was tested
 
-- `deno test --allow-env` in `supabase/functions/gemini-test` (9 tests, Gemini and the staff check are faked).
+- `deno test --allow-env` in `supabase/functions/gemini-test` (11 tests, Gemini, the staff check and the cap check are faked).
+- Daily cap (18 Nov): all migrations run in PGlite with Supabase's default table rights, checking: requests 1 to 100 pass and 101 is refused, the count stops at 100, a new day starts again, inactive accounts are refused without using the count, the public key cannot call it, and signed-in users can neither read nor reset the counter.
 - The five migrations were run in an in-memory Postgres (PGlite) with a stand-in for Supabase's `auth` schema, checking: the trigger makes profiles, duplicate usernames fail, not-logged-in users see only `public_menu`, staff add orders but cannot delete them or change points, expired points do not count, staff cannot make themselves owner.
 - On the live project: the security advisor (only the two intended warnings left) and the public menu calls above. Tested live on 14 Nov: username login (`nasriq`) and a real Gemini draft through `gemini-test`.
 
