@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 
 import '../data/order.dart';
 
@@ -25,15 +26,27 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     setState(() => o.status = n);
   }
 
+  String _money(double v) => 'RM ${v.toStringAsFixed(2)}';
+
+  String get _readyMessage {
+    final p = o.pickupDate;
+    return 'Hi ${o.customer}, your order ${o.id} is ready for collection on '
+        '${p.day}/${p.month}/${p.year}. Balance due: ${_money(o.balance)}. '
+        'Thank you for choosing Mawar Cake House.';
+  }
+
+  Future<void> _copyReady() async {
+    await Clipboard.setData(ClipboardData(text: _readyMessage));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Copied. Paste it into WhatsApp.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = o.pickupDate;
     final theme = Theme.of(context);
-    final allergy = !o.allergyAnswered
-        ? 'Not answered'
-        : o.allergyNote.isEmpty
-        ? 'No allergy'
-        : o.allergyNote;
     final next = _next;
 
     return Scaffold(
@@ -43,16 +56,18 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         children: [
           Text(o.customer, style: theme.textTheme.titleLarge),
           const SizedBox(height: 4),
-          Text('Pickup ${p.day}/${p.month}/${p.year}'),
+          Text(
+            '${o.channel} · ${o.size} · Pickup ${p.day}/${p.month}/${p.year}',
+          ),
           const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 children: [
-                  _row('Total', o.total),
-                  _row('Deposit (30%)', o.deposit),
-                  _row('Balance', o.balance),
+                  _row('Total', _money(o.total)),
+                  _row('Deposit (30%)', _money(o.deposit)),
+                  _row('Balance', _money(o.balance)),
                 ],
               ),
             ),
@@ -61,7 +76,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           Card(
             child: ListTile(
               title: const Text('Allergy'),
-              subtitle: Text(allergy),
+              subtitle: Text(
+                o.allergens.isEmpty ? 'Not answered' : o.allergens.join(', '),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -89,16 +106,24 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             onPressed: next == null ? null : _advance,
             child: Text(next == null ? 'Collected' : 'Move to: ${next.label}'),
           ),
+          if (o.status == OrderStatus.ready) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _copyReady,
+              icon: const Icon(Icons.copy),
+              label: const Text('Copy ready message for WhatsApp'),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _row(String label, double value) => Padding(
+  Widget _row(String label, String value) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label), Text(value.toStringAsFixed(2))],
+      children: [Text(label), Text(value)],
     ),
   );
 }

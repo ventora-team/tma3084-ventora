@@ -1,16 +1,18 @@
 import 'order.dart';
 
 // Sample orders plus orders added this session. Resets when the app restarts.
-// Replace with Supabase once the backend is confirmed.
-// TODO(OI-xx): currency format not confirmed; amounts shown without a symbol.
+// TODO(OI-xx): currency and sizes (Small/Medium/Large) not confirmed.
 class OrderRepository {
   static final List<Order> _orders = [
     Order(
       id: 'ORD-001',
       customer: 'Sample Customer A',
       pickupDate: DateTime(2026, 11, 22),
-      total: 120,
+      total: 100,
       status: OrderStatus.received,
+      channel: 'WhatsApp',
+      size: 'Medium',
+      allergens: const ['None'],
     ),
     Order(
       id: 'ORD-002',
@@ -18,7 +20,9 @@ class OrderRepository {
       pickupDate: DateTime(2026, 11, 23),
       total: 85.5,
       status: OrderStatus.depositPaid,
-      allergyAnswered: true,
+      channel: 'Walk-in',
+      size: 'Large',
+      allergens: const ['Nuts'],
     ),
     Order(
       id: 'ORD-003',
@@ -26,7 +30,9 @@ class OrderRepository {
       pickupDate: DateTime(2026, 11, 24),
       total: 240,
       status: OrderStatus.preparing,
-      allergyAnswered: true,
+      channel: 'TikTok',
+      size: 'Small',
+      allergens: const ['Dairy', 'Eggs'],
     ),
   ];
 
