@@ -16,7 +16,7 @@ Future<void> main() async {
   runApp(MawarApp(complaints: ComplaintBox()));
 }
 
-/// Supabase has no username login, so each username maps to a hidden email (docs/BACKEND_SUPABASE.md).
+/// Supabase has no username login, so each username maps to a hidden email.
 Future<void> signInWithUsername(String username, String password) =>
     Supabase.instance.client.auth.signInWithPassword(
       email: '${username.trim().toLowerCase()}@mawarcake.example.com',
@@ -31,6 +31,7 @@ class MawarApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Supabase.instance.client.auth;
+
     return MaterialApp(
       title: 'Mawar Cake House',
       theme: ThemeData(colorSchemeSeed: Colors.pink),

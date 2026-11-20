@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'ai.dart';
 import 'complaints.dart';
+import 'orders_list.dart';
 
 typedef SignIn = Future<void> Function(String username, String password);
 
@@ -130,7 +131,13 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_tab == 0 ? 'Reply' : 'Complaints'),
+        title: Text(
+          _tab == 0
+              ? 'Orders'
+              : _tab == 1
+              ? 'Reply'
+              : 'Complaints',
+        ),
         actions: [
           if (widget.onSignOut != null)
             IconButton(
@@ -143,6 +150,8 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: _tab,
         children: [
+          const OrdersListPage(),
+
           ReplyPage(
             draft: widget.draft,
             complaints: widget.complaints,
@@ -162,6 +171,11 @@ class _HomePageState extends State<HomePage> {
           selectedIndex: _tab,
           onDestinationSelected: (i) => setState(() => _tab = i),
           destinations: [
+            const NavigationDestination(
+              icon: Icon(Icons.receipt_long),
+              label: 'Orders',
+            ),
+
             const NavigationDestination(
               icon: Icon(Icons.chat_bubble_outline),
               label: 'Reply',
