@@ -113,3 +113,12 @@ Deno.test("cap check failing also falls back to templates", async () => {
     assertEquals(calls.some((u) => u.includes("generativelanguage")), false);
   } finally { restore(); }
 });
+
+Deno.test("browser pre-check is allowed and answers carry the CORS header", async () => {
+  const pre = await handler(new Request("http://x", { method: "OPTIONS" }));
+  assertEquals(pre.status, 200);
+  assertEquals(pre.headers.get("Access-Control-Allow-Origin"), "*");
+  const res = await handler(new Request("http://x", { method: "POST", body: "{}" }));
+  assertEquals(res.status, 401);
+  assertEquals(res.headers.get("Access-Control-Allow-Origin"), "*");
+});

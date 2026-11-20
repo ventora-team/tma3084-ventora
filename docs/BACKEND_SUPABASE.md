@@ -95,6 +95,8 @@ Answer: `{"question": "...", "draft": "..."}`. If Gemini fails or the daily limi
 
 **Daily cap:** the whole shop shares 100 AI requests a day (SRS Table 11, AI-10), well under Gemini's free tier. Before calling Gemini the function asks the database `use_ai_quota()`, which adds one to today's count and says no once 100 are used. Then the answer is 502 with `"reason": "daily_limit"`, so the app can show the templates. "Today" is shop time (Kuching, UTC+8): the count starts again at midnight. If the count cannot be checked, the function also sends staff to the templates instead of calling Gemini. To change the number, edit `100` in a new migration that replaces `use_ai_quota()`. Today's count: `select * from ai_usage order by day desc;` in the SQL editor.
 
+Browser calls (the Flutter web build) work too: the function answers the browser's OPTIONS pre-check and sends CORS headers. Any site may call it, which is safe because every POST still needs an active staff member's own login token. Deployed 19 Nov (version 8, without the daily cap): checked live that the pre-check answers 200 with the CORS headers, and the public key or no login still get 401.
+
 It uses the fixed model `gemini-3.5-flash-lite` (about 1.5 s per reply). Do not use `gemini-flash-latest`: on 17 Nov it moved to a newer, slower model that hung for free-tier keys. Time limits: 5 s for the staff check, 20 s for Gemini, after which the app gets the "use a template reply" answer.
 
 ## How this was tested
