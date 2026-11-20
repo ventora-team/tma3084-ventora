@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'order_detail.dart';
+import 'new_order.dart';
+
 class OrdersListPage extends StatelessWidget {
   const OrdersListPage({super.key});
 
@@ -27,31 +30,40 @@ class OrdersListPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Orders List'),
-      ),
+      appBar: AppBar(title: const Text('Orders List')),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: orders.length,
         itemBuilder: (context, index) {
           final order = orders[index];
 
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              title: Text(order['customer']!),
-              subtitle: Text(
-                '${order['id']}\n${order['date']}',
-              ),
-              trailing: Chip(
-                label: Text(order['status']!),
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OrderDetailPage(),
+                ),
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                title: Text(order['customer']!),
+                subtitle: Text('${order['id']}\n${order['date']}'),
+                trailing: Chip(label: Text(order['status']!)),
               ),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NewOrderPage()),
+          );
+        },
         child: const Icon(Icons.add),
       ),
     );
