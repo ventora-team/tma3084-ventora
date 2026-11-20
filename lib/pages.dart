@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'ai.dart';
 import 'complaints.dart';
+import 'features/presentation/order_list_screen.dart';
+import 'features/presentation/menu_screen.dart';
 
 typedef SignIn = Future<void> Function(String username, String password);
 
@@ -94,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-/// Staff home: the Reply tab (FR-AI-01) and the owner's Complaints tab (FR-AI-02).
+/// Staff home: Reply (FR-AI-01), Complaints (FR-AI-02) and Orders (demo).
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -128,9 +130,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    const titles = ['Reply', 'Complaints', 'Orders', 'Menu'];
     return Scaffold(
       appBar: AppBar(
-        title: Text(_tab == 0 ? 'Reply' : 'Complaints'),
+        title: Text(titles[_tab]),
         actions: [
           if (widget.onSignOut != null)
             IconButton(
@@ -154,6 +157,8 @@ class _HomePageState extends State<HomePage> {
             complaints: widget.complaints,
             onRelease: _releaseToReply,
           ),
+          const OrderListScreen(),
+          const MenuScreen(),
         ],
       ),
       bottomNavigationBar: ListenableBuilder(
@@ -173,6 +178,14 @@ class _HomePageState extends State<HomePage> {
                 child: const Icon(Icons.report_outlined),
               ),
               label: 'Complaints',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined),
+              label: 'Orders',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.restaurant_menu_outlined),
+              label: 'Menu',
             ),
           ],
         ),
