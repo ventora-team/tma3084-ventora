@@ -37,6 +37,7 @@ One entry per significant AI-assisted piece of work, using the fields from secti
   - Complaints are kept in memory for Demo 1 (marked as a shortcut in the code); the complaints table comes with the full FR-AI-02.
   - A released message is not flagged again, so staff are not stuck in a loop.
   - Two tests first failed: the buttons sat below the small test screen, and the clipboard call never finished without a fake clipboard. Fixed in the tests, not the app.
+  - CI on Flutter 3.50 failed twice: `flutter analyze` flagged the deprecated `package:flutter/material.dart` (switched to `material_ui`), then the coverage step stopped because lcov now treats a filter that matches no files (`*.g.dart`) as an error (added `--ignore-errors unused` in `ci.yml`).
 - **Verification & GitHub PR Link:**
   - `dart format`, `flutter analyze` (no issues), `flutter test --coverage`: 7 passed, 91% line coverage on the tested files.
   - `deno test --allow-env` in `supabase/functions/gemini-test`: 10 passed; the live function answered the browser pre-check with 405 before the change. Deployed 19 Nov (version 8): pre-check 200 with CORS headers, public key and no login still 401.
