@@ -1,4 +1,4 @@
-import 'order.dart';
+import '../domain/order.dart';
 
 // Sample orders plus orders added this session. Resets when the app restarts.
 // TODO(OI-xx): currency and sizes (Small/Medium/Large) not confirmed.

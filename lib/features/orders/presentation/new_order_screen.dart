@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../data/order.dart';
-import '../../data/order_repository.dart';
+import '../domain/order.dart';
+import '../data/order_repository.dart';
 
 // Channels from the client meeting notes (15 Oct).
 const kChannels = ['WhatsApp', 'TikTok', 'Facebook', 'Grab', 'Walk-in'];

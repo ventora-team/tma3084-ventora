@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../data/menu_repository.dart';
+import '../data/menu_repository.dart';
 import 'menu_item_form_screen.dart';
 
 class MenuScreen extends StatefulWidget {
