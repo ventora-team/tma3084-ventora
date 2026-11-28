@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
-import 'ai.dart';
-import 'complaints.dart';
-import 'app/session.dart';
-import 'features/presentation/menu_screen.dart';
-import 'features/presentation/order_list_screen.dart';
+import '../ai.dart';
+import '../complaints.dart';
+import 'session.dart';
+import '../features/presentation/menu_screen.dart';
+import '../features/presentation/order_list_screen.dart';
 
 typedef SignIn = Future<void> Function(String username, String password);
 

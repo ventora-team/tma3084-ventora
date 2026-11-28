@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'ai.dart';
 import 'complaints.dart';
-import 'pages.dart';
+import 'app/router.dart';
 import 'core/theme/theme.dart';
 
 const supabaseUrl = 'https://pdnhqcjlyszohoxnxzeg.supabase.co';
