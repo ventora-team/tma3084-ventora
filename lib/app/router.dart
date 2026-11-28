@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
-import '../ai.dart';
-import '../complaints.dart';
+import '../features/ai/data/ai_service.dart';
+import '../features/complaints/domain/complaint_box.dart';
 import 'session.dart';
 import '../features/presentation/menu_screen.dart';
 import '../features/orders/presentation/order_list_screen.dart';
