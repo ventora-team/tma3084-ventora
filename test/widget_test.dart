@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mawar_cake_house/ai.dart';
-import 'package:mawar_cake_house/complaints.dart';
-import 'package:mawar_cake_house/pages.dart';
+import 'package:mawar_cake_house/features/ai/data/ai_service.dart';
+import 'package:mawar_cake_house/features/complaints/domain/complaint_box.dart';
+import 'package:mawar_cake_house/app/router.dart';
 
 Widget app(DraftReply draft, ComplaintBox box) => MaterialApp(
   home: HomePage(draft: draft, complaints: box),
