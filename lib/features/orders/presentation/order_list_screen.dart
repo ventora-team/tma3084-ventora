@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../data/order.dart';
-import '../data/order_repository.dart';
+import '../../data/order.dart';
+import '../../data/order_repository.dart';
 import 'new_order_screen.dart';
 import 'order_details_screen.dart';
 
