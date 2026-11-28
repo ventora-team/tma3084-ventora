@@ -1,11 +1,8 @@
-import 'package:material_ui/material_ui.dart';
+﻿import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../features/ai/data/ai_service.dart';
 import '../features/complaints/domain/complaint_box.dart';
-import 'session.dart';
-import '../features/menu/presentation/menu_screen.dart';
-import '../features/orders/presentation/order_list_screen.dart';
 
 typedef SignIn = Future<void> Function(String username, String password);
 
@@ -33,10 +30,6 @@ class _LoginPageState extends State<LoginPage> {
       _busy = true;
       _error = null;
     });
-    // Demo only: the owner tabs are chosen by username. See role.dart.
-    currentRole.value = _username.text.trim().toLowerCase() == 'owner'
-        ? Role.owner
-        : Role.staff;
     try {
       await widget.signIn(_username.text, _password.text);
     } catch (_) {
@@ -64,17 +57,13 @@ class _LoginPageState extends State<LoginPage> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Staff and owner sign in',
-                  textAlign: TextAlign.center,
-                ),
+                const Text('Staff login', textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _username,
                   decoration: const InputDecoration(labelText: 'Username'),
                   textInputAction: TextInputAction.next,
                 ),
-                const SizedBox(height: 16),
                 TextField(
                   controller: _password,
                   decoration: const InputDecoration(labelText: 'Password'),
@@ -105,30 +94,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-enum _Section { orders, points, menu, reply, complaints, admin }
-
-extension on _Section {
-  String get title => switch (this) {
-    _Section.orders => 'Orders',
-    _Section.points => 'Points',
-    _Section.menu => 'Menu',
-    _Section.reply => 'Reply',
-    _Section.complaints => 'Complaints',
-    _Section.admin => 'Admin',
-  };
-
-  IconData get icon => switch (this) {
-    _Section.orders => Icons.receipt_long_outlined,
-    _Section.points => Icons.stars_outlined,
-    _Section.menu => Icons.restaurant_menu_outlined,
-    _Section.reply => Icons.chat_bubble_outline,
-    _Section.complaints => Icons.report_outlined,
-    _Section.admin => Icons.admin_panel_settings_outlined,
-  };
-}
-
-/// Staff home and owner home. Staff: Orders, Menu, Reply.
-/// Owner: Orders, Points, Menu, Complaints, Admin (Points and Admin are not in Demo 1).
+/// Staff home: the Reply tab (FR-AI-01) and the owner's Complaints tab (FR-AI-02).
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -152,110 +118,63 @@ class _HomePageState extends State<HomePage> {
   /// Set when a message comes back from Complaints, so it is not flagged again.
   bool _released = false;
 
-  List<_Section> get _sections => currentRole.value == Role.owner
-      ? const [
-          _Section.orders,
-          _Section.points,
-          _Section.menu,
-          _Section.complaints,
-          _Section.admin,
-        ]
-      : const [_Section.orders, _Section.menu, _Section.reply];
-
   void _releaseToReply(Complaint c) {
-    final i = _sections.indexOf(_Section.reply);
-    if (i < 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Reply is a staff tab.')));
-      return;
-    }
     setState(() {
       _message.text = widget.complaints.release(c);
       _released = true;
-      _tab = i;
+      _tab = 0;
     });
   }
 
-  Widget _bodyFor(_Section s) => switch (s) {
-    _Section.orders => const OrderListScreen(),
-    _Section.menu => const MenuScreen(),
-    _Section.reply => ReplyPage(
-      draft: widget.draft,
-      complaints: widget.complaints,
-      message: _message,
-      released: _released,
-      onChecked: () => _released = false,
-    ),
-    _Section.complaints => ComplaintsPage(
-      complaints: widget.complaints,
-      onRelease: _releaseToReply,
-    ),
-    _Section.points || _Section.admin => _ComingSoon(s.title),
-  };
-
-  Widget _navIcon(_Section s) {
-    if (s == _Section.complaints) {
-      return Badge(
-        isLabelVisible: widget.complaints.newCount > 0,
-        label: Text('${widget.complaints.newCount}'),
-        child: Icon(s.icon),
-      );
-    }
-    return Icon(s.icon);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Role>(
-      valueListenable: currentRole,
-      builder: (context, _, _) {
-        final sections = _sections;
-        final tab = _tab < sections.length ? _tab : 0;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(sections[tab].title),
-            actions: [
-              if (widget.onSignOut != null)
-                IconButton(
-                  tooltip: 'Sign out',
-                  icon: const Icon(Icons.logout),
-                  onPressed: widget.onSignOut,
-                ),
-            ],
-          ),
-          body: IndexedStack(
-            index: tab,
-            children: [for (final s in sections) _bodyFor(s)],
-          ),
-          bottomNavigationBar: ListenableBuilder(
-            listenable: widget.complaints,
-            builder: (context, _) => NavigationBar(
-              selectedIndex: tab,
-              onDestinationSelected: (i) => setState(() => _tab = i),
-              destinations: [
-                for (final s in sections)
-                  NavigationDestination(icon: _navIcon(s), label: s.title),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_tab == 0 ? 'Reply' : 'Complaints'),
+        actions: [
+          if (widget.onSignOut != null)
+            IconButton(
+              tooltip: 'Sign out',
+              icon: const Icon(Icons.logout),
+              onPressed: widget.onSignOut,
             ),
+        ],
+      ),
+      body: IndexedStack(
+        index: _tab,
+        children: [
+          ReplyPage(
+            draft: widget.draft,
+            complaints: widget.complaints,
+            message: _message,
+            released: _released,
+            onChecked: () => _released = false,
           ),
-        );
-      },
-    );
-  }
-}
-
-class _ComingSoon extends StatelessWidget {
-  const _ComingSoon(this.name);
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          '$name is not part of Demo 1.',
-          textAlign: TextAlign.center,
+          ComplaintsPage(
+            complaints: widget.complaints,
+            onRelease: _releaseToReply,
+          ),
+        ],
+      ),
+      bottomNavigationBar: ListenableBuilder(
+        listenable: widget.complaints,
+        builder: (context, _) => NavigationBar(
+          selectedIndex: _tab,
+          onDestinationSelected: (i) => setState(() => _tab = i),
+          destinations: [
+            const NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline),
+              label: 'Reply',
+            ),
+            NavigationDestination(
+              icon: Badge(
+                isLabelVisible: widget.complaints.newCount > 0,
+                label: Text('${widget.complaints.newCount}'),
+                child: const Icon(Icons.report_outlined),
+              ),
+              label: 'Complaints',
+            ),
+          ],
         ),
       ),
     );
