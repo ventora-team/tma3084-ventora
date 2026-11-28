@@ -25,6 +25,26 @@ One entry per significant AI-assisted piece of work, using the fields from secti
 
 ---
 
+## AI-002
+
+- **Date:** 18 Nov 2026
+- **Owner:** Nasriq (Backend and AI)
+- **Target Feature / Module:** Shared daily AI cap for the `gemini-test` Edge Function (FR-AI-01, SRS Table 11 AI-10)
+- **AI Tool & Model Used:** Claude Code, model Claude Opus 5.5
+- **Specification / Prompt Provided:** "add the daily cap to the edge function", after the team set AI-10 to 100 requests a day for the whole shop (one cap shared by the business, as in issue #11 and the proposal's Table 6).
+- **AI Output Summary:** A migration with an `ai_usage` counter table (one row per day, no direct access) and a `use_ai_quota()` database function that counts one request and refuses after 100 a day in shop time (Kuching); the Edge Function checks it before calling Gemini and answers "use a template reply" with `reason: "daily_limit"` when the cap is used up or cannot be checked; two new Deno tests; doc update in `docs/BACKEND_SUPABASE.md`.
+- **Human Refinement & Debugging:**
+  - Cap kept inside the database function, not passed in by the caller, so nobody can raise it from the app.
+  - Count and check happen in one SQL statement, so two staff asking at once cannot both take the last request.
+  - First PGlite run failed with "permission denied for table ai_usage": the test setup lacked Supabase's default table rights, not a fault in the migration. Added them and reran.
+- **Verification & GitHub PR Link:**
+  - `deno test --allow-env` in `supabase/functions/gemini-test`: 11 passed.
+  - All migrations run in PGlite: requests 1 to 100 pass, 101 refused, count stays 100, new day starts again, inactive account refused without using the count, public key refused, users cannot read or reset the counter.
+  - Live project: not applied or deployed yet.
+  - PR: https://github.com/ventora-team/tma3084-ventora/pull/20 (reviewer: Zulirfan)
+
+---
+
 ## AI-003
 
 - **Date:** 19 Nov 2026
@@ -41,5 +61,5 @@ One entry per significant AI-assisted piece of work, using the fields from secti
 - **Verification & GitHub PR Link:**
   - `dart format`, `flutter analyze` (no issues), `flutter test --coverage`: 7 passed, 91% line coverage on the tested files.
   - `deno test --allow-env` in `supabase/functions/gemini-test`: 10 passed; the live function answered the browser pre-check with 405 before the change. Deployed 19 Nov (version 8): pre-check 200 with CORS headers, public key and no login still 401.
-  - Web build served locally: login screen and its empty-field check work in the browser. Signed-in run with the live AI: pending.
+  - Web build served locally: login screen and its empty-field check work in the browser. Signed-in run with the live AI (20 Nov, Nasriq): real draft returned.
   - PR: https://github.com/ventora-team/tma3084-ventora/pull/21
