@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../domain/order.dart';
 import '../data/order_repository.dart';
+import '../domain/order_rules.dart';
 
 // Channels from the client meeting notes (15 Oct).
 const kChannels = ['WhatsApp', 'TikTok', 'Facebook', 'Grab', 'Walk-in'];
@@ -36,14 +37,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     super.dispose();
   }
 
-  double? get _totalValue {
-    final t = double.tryParse(_total.text.trim());
-    return (t != null && t > 0) ? t : null;
-  }
+  double? get _totalValue => parseTotal(_total.text);
 
-  bool get _allergyAnswered =>
-      _allergens.isNotEmpty &&
-      (!_allergens.contains('Other') || _other.text.trim().isNotEmpty);
+  bool get _allergyAnswered => allergyAnswered(_allergens, _other.text);
 
   bool get _canConfirm =>
       _customer.text.trim().isNotEmpty &&
@@ -103,8 +99,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   @override
   Widget build(BuildContext context) {
     final t = _totalValue ?? 0;
-    final deposit = t * 0.3;
-    final balance = t - deposit;
+    final deposit = depositOf(t);
+    final balance = balanceOf(t);
     final theme = Theme.of(context);
     final p = _pickup;
 
