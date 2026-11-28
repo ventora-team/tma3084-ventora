@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../data/menu_repository.dart';
+import '../../data/menu_repository.dart';
 
 // Matches the phone edit screen: Name, Category, Description, Stock,
 // Remove by, Price, Save Changes.
